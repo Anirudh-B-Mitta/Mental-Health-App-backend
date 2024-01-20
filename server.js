@@ -1,6 +1,7 @@
 const express = require('express')
 const mongoose = require('mongoose')
-const Product = require('./models/productModel')
+const User = require('./models/userModel')
+const ChatHistory = require('./models/chatHistory')
 const bodyParser = require('body-parser');
 const app = express()
 
@@ -8,40 +9,34 @@ app.use(express.json())
 app.use(express.urlencoded({extended: false}))
 app.use(bodyParser.json());
 
-app.post('/api/data', (req, res) => {
-  const receivedData = req.body;
-  console.log('Received data:', receivedData);
-  res.send('Data received!');
-});
-
 app.get('/', (req, res) => {
     res.send('Hello NODE API')
 })
 
-app.get('/products', async(req, res) => {
+app.get('/users', async(req, res) => {
     try {
-        const products = await Product.find({});
-        res.status(200).json(products);
+        const users = await User.find({});
+        res.status(200).json(users);
     } catch (error) {
         res.status(500).json({message: error.message})
     }
 })
 
-app.get('/products/:id', async(req, res) =>{
+app.get('/users/:id', async(req, res) =>{
     try {
         const {id} = req.params;
-        const product = await Product.findById(id);
-        res.status(200).json(product);
+        const user = await User.findById(id);
+        res.status(200).json(user);
     } catch (error) {
         res.status(500).json({message: error.message})
     }
 })
 
 
-app.post('/products', async(req, res) => {
+app.post('/users', async(req, res) => {
     try {
-        const product = await Product.create(req.body)
-        res.status(200).json(product);
+        const user = await User.create(req.body)
+        res.status(200).json(user);
         
     } catch (error) {
         console.log(error.message);
@@ -50,16 +45,16 @@ app.post('/products', async(req, res) => {
 })
 
 // update a product
-app.put('/products/:id', async(req, res) => {
+app.put('/users/:id', async(req, res) => {
     try {
         const {id} = req.params;
-        const product = await Product.findByIdAndUpdate(id, req.body);
+        const user = await User.findByIdAndUpdate(id, req.body);
         // we cannot find any product in database
-        if(!product){
-            return res.status(404).json({message: `cannot find any product with ID ${id}`})
+        if(!user){
+            return res.status(404).json({message: `cannot find any user with ID ${id}`})
         }
-        const updatedProduct = await Product.findById(id);
-        res.status(200).json(updatedProduct);
+        const updatedUser = await User.findById(id);
+        res.status(200).json(updatedUser);
         
     } catch (error) {
         res.status(500).json({message: error.message})
@@ -68,14 +63,14 @@ app.put('/products/:id', async(req, res) => {
 
 // delete a product
 
-app.delete('/products/:id', async(req, res) =>{
+app.delete('/users/:id', async(req, res) =>{
     try {
         const {id} = req.params;
-        const product = await Product.findByIdAndDelete(id);
-        if(!product){
-            return res.status(404).json({message: `cannot find any product with ID ${id}`})
+        const user = await User.findByIdAndDelete(id);
+        if(!user){
+            return res.status(404).json({message: `cannot find any user with ID ${id}`})
         }
-        res.status(200).json(product);
+        res.status(200).json(user);
         
     } catch (error) {
         res.status(500).json({message: error.message})
@@ -84,21 +79,63 @@ app.delete('/products/:id', async(req, res) =>{
 
 app.post("/login", (req,res) => {
     const {username, password} = req.body;
-    Product.findOne({username: username})
+    User.findOne({username: username})
     .then(user => {
         if(user) {
             if(user.password === password) {
                 res.json("Success")
             } 
             else {
-                res.json("the password is incorrect")
+                res.json("Username or password is incorrect")
             }
         }
         else {
-            res.json("No such record exists")
+            res.json("Username or password is incorrect")
         }
     })
 })
+
+app.post('/api/data', async (req, res) => {
+    const receivedData = req.body;
+    console.log('Data received successsfully!');
+
+    try {
+        const ch = await ChatHistory.create(receivedData)
+        res.status(200).ch;
+        
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({message: error.message})
+        return
+    }
+    res.send('Data received!');
+    return
+});  
+
+app.post("/chat", async (req,res) => {
+    const str = req.body
+    console.log(str)
+    try {
+        const users = await User.find({});
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({message: error.message})
+    }
+})
+
+// app.post("/chat", (req,res) => {
+//     const {id} = req.body;
+//     ChatHistory.findOne({username: username})
+//     .then(chat => {
+//         if(chat) {
+//             try {
+//                 res.status(200).json(chat);
+//             } catch (error) {
+//                 res.status(500).json({message: error.message})
+//             }
+//         }
+//     })
+// })
 
 mongoose.set("strictQuery", false)
 mongoose.
