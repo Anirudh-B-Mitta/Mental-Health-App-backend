@@ -116,8 +116,8 @@ app.post("/chat", async (req,res) => {
     const str = req.body
     console.log(str)
     try {
-        const users = await User.find({});
-        res.status(200).json(users);
+        const chat = await ChatHistory.find({});
+        res.status(200).json(chat);
     } catch (error) {
         res.status(500).json({message: error.message})
     }
